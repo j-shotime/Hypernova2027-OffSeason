@@ -274,6 +274,7 @@ public class Robot extends TimedRobot {
   
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   Boolean run = true;
+  Boolean global = true;
 
   @Override
   public void autonomousInit() {
@@ -318,6 +319,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     run = true;
+    global = false;
     
     Blocker.getEncoder().setPosition(blockerPos[0]);
     blockerState = 0;
@@ -327,13 +329,27 @@ public class Robot extends TimedRobot {
       double yaw = imu.getYawRadians();
       double multiplier = (1-programmerController.getRightTrigger());
       if(!run) return;
-      if(driverController.getRightTrigger() == 0)
-      { 
-        swerveDrive.globalArcadeDrive(-driverController.getLeftY()*multiplier, driverController.getLeftX()*multiplier, driverController.getRightX()*multiplier,Math.PI-yaw);
+      if(global)
+      {
+        if(driverController.getRightTrigger() == 0)
+        { 
+          swerveDrive.globalArcadeDrive(-driverController.getLeftY()*multiplier, driverController.getLeftX()*multiplier, driverController.getRightX()*multiplier,Math.PI-yaw);
+        }
+        else
+        {
+          swerveDrive.globalArcadeDrive(-driverController.getLeftY()*multiplier, driverController.getLeftX()*multiplier, 0,Math.PI-yaw);
+        }
       }
       else
       {
-        swerveDrive.globalArcadeDrive(-driverController.getLeftY()*multiplier, driverController.getLeftX()*multiplier, 0,Math.PI-yaw);
+        if(driverController.getRightTrigger() == 0)
+        { 
+          swerveDrive.localArcadeDrive(-driverController.getLeftY()*multiplier, driverController.getLeftX()*multiplier, driverController.getRightX()*multiplier);
+        }
+        else
+        {
+          swerveDrive.localArcadeDrive(-driverController.getLeftY()*multiplier, driverController.getLeftX()*multiplier, 0);
+        }
       }
     }, 0.002);
 
@@ -358,77 +374,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() 
   {
-
-    if(driverController.getYButton())
-    {
-      game = true;
-    }
-    else if(driverController.getXButton())
-    {
-      game = false;
-    }
-    // If NetworkTables control is enabled (>0.5), drive the back-right module from the provided VelocityVector values.
-    // try {
-    //   double enabled = brEnableSub.get();
-    //   if (enabled > 0.5) {
-    //     double volts = brVoltageSub.get();
-    //     double angle = brAngleSub.get();
-    //     BackRightModule.set(new VoltageVector(Units.Volts.of(volts), Units.Radians.of(angle)));
-    //     // publish telemetry
-    //     try {
-    //       brTelemetryAnglePub.set(BackRightModule.getSteerAngleRadians());
-    //       brTelemetryVoltagePub.set(volts);
-    //     } catch (Exception ignored) {}
-    //     return;
-    //   }
-    // } catch (Exception e) {
-    //   // Fall back to normal control on any NT errors
-    // }
-
-    // Field-centric: use IMU yaw if available, otherwise fall back to robot-centric local drive
-
-    Blocker.getClosedLoopController().setSetpoint(blockerPos[blockerState], ControlType.kPosition, ClosedLoopSlot.kSlot0);
-
-    ElevatorActuator.setThrottle((driverController.getLeftBumperButton() ? 1 : 0) -driverController.getLeftTrigger());
-
-    
-    boolean resetYawButtonPressed = driverController.getAButton();
-    Telemetry.log("Reset Yaw Button", resetYawButtonPressed);
-    if (resetYawButtonPressed && !lastResetYawButtonState) {
-      CommandScheduler.getInstance().schedule(resetYawCommand);
-    }
-    lastResetYawButtonState = resetYawButtonPressed;
-    
-    if(driverController.getRightBumperButtonPressed())
-    {
-      blockerState = (blockerState + 1) % 3;
-    }
-
-    if(game == true)
-    {
-      if(driverController.getRightTrigger()<=0.2)
-      {
-        LastPumpState = false;
-      }
-      if(driverController.getRightTrigger()>=0.7 && LastPumpState == false)
-      {
-        timer2.restart();
-        LastPumpState = true;
-      }
-      if(timer2.isRunning() && !timer2.hasElapsed(0.1))
-      {
-        PrimaryElevator.setControl(new DutyCycleOut(-0.1));
-      }
-      else if (timer2.isRunning()) 
-      {
-        PrimaryElevator.setControl(new DutyCycleOut(0.05));
-      }
-    }
-    else
-    {
-      PrimaryElevator.setControl(new DutyCycleOut(driverController.getRightY()*driverController.getRightTrigger()));
-    }
-    //BackLeftModule.set(new VoltageVector(Units.Volts.of(Math.hypot(controller.getLeftX(), controller.getLeftY())), Units.Radians.of((Math.PI/2.0)-Math.atan2(controller.getLeftY(),controller.getLeftX()))));
+    //BackLeftModule.set(new VoltageVector(Units.Volts.of(12*Math.hypot(driverController.getLeftX(), driverController.getLeftY())), Units.Radians.of((Math.PI/2.0)-Math.atan2(driverController.getLeftY(),driverController.getLeftX()))));
   }
 
   @Override

@@ -56,8 +56,6 @@ public class SwerveModule {
         double wrappedTarget = wrapAngle(targetRadians);
         double shortestDelta = shortestAngleDelta(wrappedCurrent, wrappedTarget);
 
-        shortestDelta = wrapAngle(shortestDelta);
-
         double outputTargetRadians = wrappedTarget;
         double outputDriveVoltage = driveVoltage;
 
@@ -69,7 +67,8 @@ public class SwerveModule {
         return new SteerCommand(outputTargetRadians, outputDriveVoltage);
     }
 
-    public void set(VoltageVector voltageVector) {
+    public void set(VoltageVector voltageVector) 
+    {
         Voltage driveVoltage = voltageVector.voltage();
 
         double targetRadians = wrapAngle(

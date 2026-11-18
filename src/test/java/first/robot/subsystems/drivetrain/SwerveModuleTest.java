@@ -20,4 +20,12 @@ public class SwerveModuleTest {
         assertEquals(0.2, command.targetRadians(), 1e-9);
         assertEquals(6.0, command.driveVoltage(), 1e-9);
     }
+
+    @Test
+    void doesNotFlipForSmallNegativeAngleError() {
+        var command = SwerveModule.calculateSteerCommand(0.1, 0.0, 6.0);
+
+        assertEquals(0.0, command.targetRadians(), 1e-9);
+        assertEquals(6.0, command.driveVoltage(), 1e-9);
+    }
 }
