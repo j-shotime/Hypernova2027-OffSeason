@@ -3,6 +3,9 @@ package first.robot.subsystems.drivetrain;
 import static org.wpilib.units.Units.Degrees;
 import static org.wpilib.units.Units.Volts;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.wpilib.command2.SubsystemBase;
 import org.wpilib.units.Unit;
 import org.wpilib.units.Units;
@@ -16,6 +19,7 @@ import pabeles.concurrency.IntOperatorTask.Max;
 public class SwerveDrive extends SubsystemBase {
     private static final double TRANSLATION_ANGLE_HOLD_THRESHOLD = 0.08;
     private final double widthInches;
+    private final List<SwerveModule> swerveModules;
     private final double heightInches;
     private final SwerveModule frontLeft;
     private final SwerveModule frontRight;
@@ -30,9 +34,10 @@ public class SwerveDrive extends SubsystemBase {
         this.frontRight = frontRight;
         this.backLeft = backLeft;
         this.backRight = backRight;
+        swerveModules = List.of(this.frontLeft, this.frontRight, this.backLeft, this.backRight);
+
         rotationAngle = Units.Radians.of(Math.atan2(widthInches, heightInches)+(Math.PI/2));
     }
-
     public SwerveDrive(
         double widthInches,
         double heightInches,
@@ -93,33 +98,35 @@ public class SwerveDrive extends SubsystemBase {
         return backRight;
     }
 
+    public List<SwerveModule> swerveModules() {
+        return swerveModules;
+    }
+
     public void setModuleVelocities(VelocityVector frontLeftVelocity, VelocityVector frontRightVelocity, VelocityVector backLeftVelocity, VelocityVector backRightVelocity) {
-        frontLeft.set(frontLeftVelocity);
-        frontRight.set(frontRightVelocity);
-        backLeft.set(backLeftVelocity);
-        backRight.set(backRightVelocity);
+        List<VelocityVector> velocities = List.of(frontLeftVelocity, frontRightVelocity, backLeftVelocity, backRightVelocity);
+        for(int i = 0; i < swerveModules.size(); i++) {
+            swerveModules.get(i).set(velocities.get(i));
+        }
     }
 
     public void setModuleVoltages(VoltageVector frontLeftVoltage, VoltageVector frontRightVoltage, VoltageVector backLeftVoltage, VoltageVector backRightVoltage) {
-        frontLeft.set(frontLeftVoltage);
-        frontRight.set(frontRightVoltage);
-        backLeft.set(backLeftVoltage);
-        backRight.set(backRightVoltage);
+        List<VoltageVector> voltages = List.of(frontLeftVoltage, frontRightVoltage, backLeftVoltage, backRightVoltage);
+        for(int i = 0; i < swerveModules.size(); i++) {
+            swerveModules.get(i).set(voltages.get(i));
+        }
     }
 
     public void stop() {
-        frontLeft.set(new VoltageVector(Units.Volts.zero(), Units.Radians.zero()));
-        frontRight.set(new VoltageVector(Units.Volts.zero(), Units.Radians.zero()));
-        backLeft.set(new VoltageVector(Units.Volts.zero(), Units.Radians.zero()));
-        backRight.set(new VoltageVector(Units.Volts.zero(), Units.Radians.zero()));
+        for(SwerveModule module : swerveModules) {
+            module.set(new VoltageVector(Units.Volts.zero(), Units.Radians.zero()));;
+        }
     }
 
     public void setDriveVoltage(Voltage voltage) {
         stop();
-        frontLeft.set(new VoltageVector(voltage, Units.Radians.zero()));
-        frontRight.set(new VoltageVector(voltage, Units.Radians.zero()));
-        backLeft.set(new VoltageVector(voltage, Units.Radians.zero()));
-        backRight.set(new VoltageVector(voltage, Units.Radians.zero()));
+        for(SwerveModule module : swerveModules) {
+            module.set(new VoltageVector(voltage, Units.Radians.zero()));
+        }
     }
 
     // public void localArcadeDrive(double forward, double strafe, double rotation, double maxVoltageVolts) {        
@@ -214,6 +221,7 @@ public class SwerveDrive extends SubsystemBase {
      * @param maxVoltageVolts max voltage
      * @param yawRadians current robot yaw in radians (positive CCW)
      */
+    
     public void globalArcadeDrive(double forward, double strafe, double rotation, double maxVoltageVolts, double yawRadians) {
         // Rotate the field vector into robot-relative coordinates by -yaw:
         double cos = Math.cos(yawRadians);
@@ -230,10 +238,9 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void resetEncoders() {
-        frontLeft.resetEncoders();
-        frontRight.resetEncoders();
-        backLeft.resetEncoders();
-        backRight.resetEncoders();
+        for(SwerveModule module : swerveModules) {
+            module.resetEncoders();
+        }
     }
 
     

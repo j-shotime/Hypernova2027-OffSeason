@@ -80,15 +80,13 @@ public class Robot extends TimedRobot {
   
   private final RobotContainer robotContainer;
   //private final first.robot.custom.VexController controller = new first.robot.custom.VexController(0);
-  
-  
-  
+
   XboxController driverController = new XboxController(0);
   XboxController programmerController = new XboxController(1);
   Timer timer2 = new Timer();
   Timer timer = new Timer();
-  CANBus CAN_S0 = new CANBus(CANPort.CAN_S0);
-  CANBus CAN_S1 = new CANBus(CANPort.CAN_S1);
+  public static final CANBus CAN_S0 = new CANBus(CANPort.CAN_S0);
+  public static final CANBus CAN_S1 = new CANBus(CANPort.CAN_S1);
   TalonFX BackRightSteer = new TalonFX(0, CAN_S0); 
   TalonFX BackRightDrive = new TalonFX(1, CAN_S0);
   TalonFX FrontRightSteer = new TalonFX(3, CAN_S0);

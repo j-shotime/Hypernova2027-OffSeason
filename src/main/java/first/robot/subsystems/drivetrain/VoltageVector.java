@@ -23,7 +23,7 @@ public record VoltageVector(
     public VoltageVector(Voltage voltage, Angle angle) 
     {
         
-        if(voltage.in(Units.Volts)<0)
+        if(voltage.in(Units.Volts) < 0)
         {
             this.voltage = voltage.times(-1);
             this.angle = normalize(angle.plus(Units.Radians.of(Math.PI)));
